@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Blood Group Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .report-form {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .report-preview {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #fff;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body {
+                padding: 0;
+                margin: 0;
+            }
+            .report-preview {
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary no-print">
+        <div class="container">
+            <a class="navbar-brand" href="/">Blood Group Detection</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/detect">Detect</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-md-5 no-print">
+                <h2 class="mb-4">Patient Information</h2>
+                
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <form id="reportForm" class="report-form">
+                    <div class="mb-3">
+                        <label for="patientId" class="form-label">Patient ID</label>
+                        <input type="text" class="form-control" id="patientId" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="patientName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="patientName" required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="patientAge" class="form-label">Age</label>
+                            <input type="number" class="form-control" id="patientAge" required min="0" max="120">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="patientGender" class="form-label">Gender</label>
+                            <select class="form-select" id="patientGender" required>
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Additional Notes</label>
+                        <textarea class="form-control" id="notes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="button" id="generateBtn" class="btn btn-primary">Generate Report</button>
+                        <button type="button" id="printBtn" class="btn btn-success">Print Report</button>
+                        <a href="/detect" class="btn btn-outline-secondary">Back to Detection</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="col-md-7">
+                <div class="report-preview" id="reportPreview">
+                    <div class="text-center mb-4">
+                        <h2>Blood Group Test Report</h2>
+                        <hr>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <strong>Patient ID:</strong> <span id="preview-id">-</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong>Date:</strong> <span>{{ result.timestamp }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <strong>Patient Name:</strong> <span id="preview-name">-</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Age/Gender:</strong> <span id="preview-age-gender">-</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12 text-center">
+                            <h4>Test Results</h4>
+                            <div class="alert alert-success mt-3">
+                                <h3 class="mb-0">Blood Group: {{ result.blood_group }}</h3>
+                            </div>
+                            <p><strong>Confidence Level:</strong> {{ (result.confidence * 100)|round(2) }}%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Notes:</strong>
+                            <p id="preview-notes" class="mt-2">-</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="mt-5">
+                    
+                    <div class="row mt-4">
+                        <div class="col-6">
+                            <p>Laboratory Technician</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <p>Authorized Signature</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5 no-print">
+        <div class="container text-center">
+            <p>&copy; 2025 Blood Group Detection. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generateBtn');
+            const printBtn = document.getElementById('printBtn');
+            
+            generateBtn.addEventListener('click', function() {
+                // Update preview with form data
+                document.getElementById('preview-id').textContent = document.getElementById('patientId').value || '-';
+                document.getElementById('preview-name').textContent = document.getElementById('patientName').value || '-';
+                
+                const age = document.getElementById('patientAge').value || '';
+                const gender = document.getElementById('patientGender').value || '';
+                document.getElementById('preview-age-gender').textContent = 
+                    (age && gender) ? `${age} / ${gender}` : '-';
+                
+                document.getElementById('preview-notes').textContent = document.getElementById('notes').value || '-';
+                
+                // Save report via API
+                fetch('/download-report?' + new URLSearchParams({
+                    patient_id: document.getElementById('patientId').value,
+                    patient_name: document.getElementById('patientName').value,
+                    notes: document.getElementById('notes').value
+                }))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Report generated successfully!');
+                    } else {
+                        alert('Error generating report: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error saving report. Please try again.');
+                });
+            });
+            
+            printBtn.addEventListener('click', function() {
+                window.print();
+            });
+        });
+    </script>
+</body>
+</html>
