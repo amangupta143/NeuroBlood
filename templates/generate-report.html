@@ -34,6 +34,37 @@
             line-height: 1.6;
         }
 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+        width: 2px; /* Initially thin */
+        height: 2px;
+        opacity: 0; /* Initially more transparent */
+        transition: all 0.3s ease;
+        }
+
+        ::-webkit-scrollbar:hover {
+        width: 4px; /* Wider on hover */
+        opacity: 0.0; /* More opaque on hover */
+        }
+
+        ::-webkit-scrollbar-track {
+        background: rgba(18, 26, 41, 0);
+        border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+        background: linear-gradient(var(--accent-cyan), var(--accent-magenta));
+        border-radius: 10px;
+        opacity: 0.0; /* Initially more transparent */
+        transition: opacity 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(var(--accent-magenta), var(--accent-cyan));
+        box-shadow: 0 0 8px rgba(0, 229, 255, 0);
+        opacity: 0; /* More opaque on hover */
+        }
+
         /* Particle background */
         #particles-js {
             position: fixed;
@@ -61,19 +92,34 @@
 
         /* Neural UI Navigation - Enhanced */
         .navbar {
-            padding: 1.5rem 0;
-            background: transparent !important;
+            margin-top: 12px;
+            padding: 0.5rem 0.6rem; /* Reduced padding to make it thinner */
+            background: rgba(10, 14, 23, 0.4) !important; /* More transparent background */
             position: fixed;
             width: 100%;
             z-index: 1000;
             transition: all 0.3s ease;
+            max-width: 90%; /* Make it slightly narrower than the full width */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Complete the centering */
+            border-radius: 50px; /* Rounded corners */
+            border: 0.01px solid rgba(0, 229, 255, 0.011); /* Slightly brighter border on hover */
+        }
+
+        .navbar:hover, .navbar.scrolled:hover {
+            background: rgba(10, 14, 23, 0.45) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.001); /* Cyan glow on hover */
+            border: 0.1px solid rgba(0, 229, 255, 0.05); /* Slightly brighter border on hover */
         }
 
         .navbar.scrolled {
-            background: rgba(10, 14, 23, 0.85) !important;
+            background: rgba(10, 14, 23, 0.45) !important;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 12px; /* Add spacing from top when scrolled */
         }
 
         .navbar-brand {
@@ -106,7 +152,7 @@
             position: absolute;
             width: 0;
             height: 2px;
-            bottom: 0;
+            bottom: 5px;
             left: 0;
             background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
             transition: width 0.3s ease;
