@@ -3,19 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Blood Group Report</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.svg') }}"/>
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.svg') }}"/>
+    <title>NeuroBlood - Generate Blood Group Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #0a0e17;
+            --secondary: #121a29;
+            --accent-cyan: #00e5ff;
+            --accent-magenta: #ff00e5;
+            --text: #e0e6ff;
+            --glass-opacity: 0.15;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--primary);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Particle background */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Enhanced Glassmorphism */
+        .glass-panel {
+            background: rgba(18, 26, 41, var(--glass-opacity));
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(12px); /* For Safari */
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0, 229, 255, 0.15);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        /* Neural UI Navigation - Enhanced */
+        .navbar {
+            padding: 1.5rem 0;
+            background: transparent !important;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(10, 14, 23, 0.85) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            background-clip: text; /* Standard property */
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent; /* Future standard */
+            transition: all 0.3s ease;
+            font-size: 1.8rem;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+
+        .nav-link {
+            color: var(--text) !important;
+            margin: 0 0.8rem;
+            position: relative;
+            padding: 0.5rem 0 !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-cyan) !important;
+            transform: translateY(-2px);
+        }
+
+        .navbar-toggler {
+            border: none;
+        }
+
+        /* Report form section */
+        .report-section {
+            padding-top: 7rem;
+            min-height: 100vh;
+            position: relative;
+        }
+
         .report-form {
             max-width: 800px;
             margin: 0 auto;
+            padding: 2rem;
+            background: rgba(18, 26, 41, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
+
         .report-preview {
-            border: 1px solid #ddd;
-            padding: 20px;
+            padding: 2rem;
             margin-top: 20px;
-            background-color: #fff;
+            background-color: white;
+            color: #333;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
+        
+        .report-preview .header-gradient {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* Form Controls */
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 0.25rem rgba(0, 229, 255, 0.25);
+            color: var(--text);
+        }
+
+        .form-label {
+            color: var(--text);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Enhanced Button Styles */
+        .btn-gradient {
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-magenta));
+            border: none;
+            border-radius: 30px;
+            padding: 0.8rem 2rem;
+            margin: 0.5rem 0;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--accent-magenta), var(--accent-cyan));
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-gradient:hover::before {
+            opacity: 1;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 229, 255, 0.3), 0 3px 6px rgba(255, 0, 229, 0.2);
+        }
+
+        .btn-outline-gradient {
+            background: transparent;
+            border: 1px solid var(--accent-cyan);
+            border-radius: 30px;
+            padding: 0.8rem 2rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-gradient:hover {
+            color: white;
+            border-color: transparent;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-magenta));
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 229, 255, 0.2), 0 3px 6px rgba(255, 0, 229, 0.1);
+        }
+
         @media print {
             .no-print {
                 display: none;
@@ -23,17 +251,151 @@
             body {
                 padding: 0;
                 margin: 0;
+                background-color: white;
+                color: black;
             }
             .report-preview {
                 border: none;
+                box-shadow: none;
+                margin: 0;
+                padding: 20px;
+                width: 100%;
+                height: 100%;
+            }
+            .container, .row, .col-md-12 {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .warning-text {
+                color: #888 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        .warning-text {
+            font-size: 8pt;
+            color: #888;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .gradient-logo {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-fill-color: transparent;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+        
+        .blood-result {
+            font-weight: 700;
+            font-size: 2rem;
+            color: #0a0e17;
+        }
+        
+        .confidence-badge {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .form-select {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-select option {
+            background-color: var(--primary);
+            color: var(--text);
+        }
+        
+        /* Enhanced Footer */
+        footer {
+            padding: 2rem 0 1rem;
+            background-color: rgba(10, 14, 23, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Update PDF styling */
+        @media print {
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .neuro-blood-header {
+                font-size: 3rem;
+                margin-bottom: 1.5rem;
+                text-align: center;
+                color: #0a0e17 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .attribution {
+                text-align: center;
+                font-size: 0.9rem;
+                margin-top: 2rem;
+                color: #666 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .attribution a {
+                color: #0066cc !important;
+                text-decoration: none;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .report-section {
+                padding-top: 0;
+                min-height: auto;
+            }
+            
+            .report-preview {
+                margin: 0 auto;
+                box-shadow: none;
+                max-width: 800px;
+                width: 100%;
+            }
+
+            .container, .row, .col-md-12, .col-md-7 {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
             }
         }
     </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary no-print">
+<body>
+    <div id="particles-js"></div>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark no-print">
         <div class="container">
-            <a class="navbar-brand" href="/">Blood Group Detection</a>
+            <a class="navbar-brand" href="/">NeuroBlood</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -45,141 +407,244 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/detect">Detect</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/report">Generate Report</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container py-5">
-        <div class="row">
-            <div class="col-md-5 no-print">
-                <h2 class="mb-4">Patient Information</h2>
-                
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <section class="report-section">
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-md-5 no-print">
+                    <h2 class="mb-4 header-gradient">Patient Information</h2>
+                    
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form id="reportForm" class="report-form glass-panel">
+                        <div class="">
+                            <label for="patientName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="patientName" required>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6 mt-3">
+                                <label for="patientAge" class="form-label">Age</label>
+                                <input type="number" class="form-control" id="patientAge" required min="0" max="120">
                             </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+                            <div class="col-md-6 mt-3">
+                                <label for="patientGender" class="form-label">Gender</label>
+                                <select class="form-select" id="patientGender" required>
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" id="downloadBtn" class="btn btn-gradient">Download Report</button>
+                            <a href="/detect" class="btn btn-outline-gradient">Back to Detection</a>
+                        </div>
+                    </form>
+                </div>
                 
-                <form id="reportForm" class="report-form">
-                    <div class="mb-3">
-                        <label for="patientId" class="form-label">Patient ID</label>
-                        <input type="text" class="form-control" id="patientId" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="patientName" class="form-label">Full Name</label>
-                        <input type="text" class="form-control" id="patientName" required>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="patientAge" class="form-label">Age</label>
-                            <input type="number" class="form-control" id="patientAge" required min="0" max="120">
+                <div class="col-md-7">
+                    <div class="report-preview" id="reportPreview">
+                        <div class="logo-container">
+                            <h1 class="gradient-logo neuro-blood-header">NeuroBlood</h1>
                         </div>
-                        <div class="col-md-6">
-                            <label for="patientGender" class="form-label">Gender</label>
-                            <select class="form-select" id="patientGender" required>
-                                <option value="">Select</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
+                        
+                        <div class="text-center mb-4">
+                            <h3>Blood Group Test Report</h3>
+                            <hr>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="notes" class="form-label">Additional Notes</label>
-                        <textarea class="form-control" id="notes" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="button" id="generateBtn" class="btn btn-primary">Generate Report</button>
-                        <button type="button" id="printBtn" class="btn btn-success">Print Report</button>
-                        <a href="/detect" class="btn btn-outline-secondary">Back to Detection</a>
-                    </div>
-                </form>
-            </div>
-            
-            <div class="col-md-7">
-                <div class="report-preview" id="reportPreview">
-                    <div class="text-center mb-4">
-                        <h2>Blood Group Test Report</h2>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Patient ID:</strong> <span id="preview-id">-</span>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Date:</strong> <span id="preview-date">{{ result.timestamp }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Patient Name:</strong> <span id="preview-name">-</span>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Age/Gender:</strong> <span id="preview-age-gender">-</span>
+                            </div>
+                        </div>
+                        
                         <hr>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <strong>Patient ID:</strong> <span id="preview-id">-</span>
-                        </div>
-                        <div class="col-6 text-end">
-                            <strong>Date:</strong> <span>{{ result.timestamp }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <strong>Patient Name:</strong> <span id="preview-name">-</span>
-                        </div>
-                        <div class="col-6">
-                            <strong>Age/Gender:</strong> <span id="preview-age-gender">-</span>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="row mb-4">
-                        <div class="col-12 text-center">
-                            <h4>Test Results</h4>
-                            <div class="alert alert-success mt-3">
-                                <h3 class="mb-0">Blood Group: {{ result.blood_group }}</h3>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                <h4>Test Results</h4>
+                                <div class="mt-3 mb-2">
+                                    <span class="blood-result">Blood Group: {{ result.blood_group }}</span>
+                                </div>
+                                <p><span class="confidence-badge">Confidence Level: {{ (result.confidence * 100)|round(2) }}%</span></p>
                             </div>
-                            <p><strong>Confidence Level:</strong> {{ (result.confidence * 100)|round(2) }}%</p>
                         </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <strong>Notes:</strong>
-                            <p id="preview-notes" class="mt-2">-</p>
+                        
+                        <hr class="mt-5">
+                        
+                        <div class="row mt-4">
+                            <div class="col-12 text-end">
+                                <p>Generated by NeuroBlood AI Platform</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <hr class="mt-5">
-                    
-                    <div class="row mt-4">
-                        <div class="col-6">
-                            <p>Laboratory Technician</p>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <p class="warning-text">Disclaimer: This report is generated using AI-powered blood group detection technology. Results should be verified by standard laboratory testing before medical decisions are made. NeuroBlood technology provides a non-invasive preliminary assessment only.</p>
+                            </div>
                         </div>
-                        <div class="col-6 text-end">
-                            <p>Authorized Signature</p>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <p class="attribution">Made by <a href="https://amangupta.me">Aman Gupta</a></p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <footer class="bg-dark text-white py-4 mt-5 no-print">
-        <div class="container text-center">
-            <p>&copy; 2025 Blood Group Detection. All rights reserved.</p>
+    <footer class="container no-print">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <p>&copy; 2025 NeuroBlood. All rights reserved.</p>
+            <p>Made by <a href="https://amangupta.me" style="text-decoration: none; color: inherit; font-weight: bold;">Aman Gupta</a></p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const generateBtn = document.getElementById('generateBtn');
-            const printBtn = document.getElementById('printBtn');
+            // Particle.js initialization
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#00e5ff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                    },
+                    "opacity": {
+                        "value": 0.3,
+                        "random": true,
+                        "anim": {
+                            "enable": true,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#00e5ff",
+                        "opacity": 0.2,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 1,
+                        "direction": "none",
+                        "random": true,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "repulse"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    }
+                },
+                "retina_detect": true
+            });
             
-            generateBtn.addEventListener('click', function() {
+            // Navbar background change on scroll
+            window.addEventListener('scroll', () => {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+            
+            const downloadBtn = document.getElementById('downloadBtn');
+            const currentDate = new Date();
+            const formattedDate = currentDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric'
+            });
+            
+            // Set current date
+            document.getElementById('preview-date').textContent = formattedDate;
+            
+            // Generate patient ID (YYYYMMDD + 4 random digits)
+            function generatePatientID() {
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const random = Math.floor(1000 + Math.random() * 9000); // 4 digits
+                
+                return `${year}${month}${day}-${random}`;
+            }
+            
+            downloadBtn.addEventListener('click', function() {
+                // Generate patient ID
+                const patientID = generatePatientID();
+                
                 // Update preview with form data
-                document.getElementById('preview-id').textContent = document.getElementById('patientId').value || '-';
+                document.getElementById('preview-id').textContent = patientID;
                 document.getElementById('preview-name').textContent = document.getElementById('patientName').value || '-';
                 
                 const age = document.getElementById('patientAge').value || '';
@@ -187,18 +652,18 @@
                 document.getElementById('preview-age-gender').textContent = 
                     (age && gender) ? `${age} / ${gender}` : '-';
                 
-                document.getElementById('preview-notes').textContent = document.getElementById('notes').value || '-';
-                
-                // Save report via API
+                // Save report via API and trigger download
                 fetch('/download-report?' + new URLSearchParams({
-                    patient_id: document.getElementById('patientId').value,
+                    patient_id: patientID,
                     patient_name: document.getElementById('patientName').value,
-                    notes: document.getElementById('notes').value
+                    patient_age: document.getElementById('patientAge').value,
+                    patient_gender: document.getElementById('patientGender').value
                 }))
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Report generated successfully!');
+                        // Create temporary print window and trigger print
+                        window.print();
                     } else {
                         alert('Error generating report: ' + (data.error || 'Unknown error'));
                     }
@@ -207,10 +672,6 @@
                     console.error('Error:', error);
                     alert('Error saving report. Please try again.');
                 });
-            });
-            
-            printBtn.addEventListener('click', function() {
-                window.print();
             });
         });
     </script>
