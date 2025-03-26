@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session, send_from_directory
 from werkzeug.utils import secure_filename
 import tensorflow as tf
 from PIL import Image
@@ -140,6 +140,10 @@ def detect():
     
     return render_template('detect.html')
 
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 @app.route('/generate-report')
 def generate_report():
     if 'detection_result' not in session:
@@ -200,6 +204,11 @@ def api_detect():
             return jsonify({'error': str(e)}), 500
     else:
         return jsonify({'error': 'Invalid file type'}), 400
+    
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                             'favicon.svg', mimetype='image/vnd.microsoft.icon')
 
 # Error handling
 @app.errorhandler(413)
