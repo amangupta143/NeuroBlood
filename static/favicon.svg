@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e17"/>
+      <stop offset="100%" stop-color="#121a29"/>
+    </linearGradient>
+    
+    <!-- Blood drop gradient from cyan to magenta (90 degrees) -->
+    <linearGradient id="blood-gradient" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#ff00e5"/>
+    </linearGradient>
+    
+    <!-- Enhanced glow effect -->
+    <filter id="blood-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  
+  <!-- Background square with rounded corners -->
+  <rect width="200" height="200" rx="20" ry="20" fill="url(#bg-gradient)"/>
+  
+  <!-- Enhanced Blood drop with slightly wider shape -->
+  <path d="M100,30 
+           C120,60 145,90 145,130 
+           C145,165 125,180 100,180 
+           C75,180 55,165 55,130 
+           C55,90 80,60 100,30Z" 
+        fill="url(#blood-gradient)" 
+        opacity="0.9" 
+        filter="url(#blood-glow)">
+    <!-- Subtle pulsing animation -->
+    <animate attributeName="d" 
+      dur="6s" 
+      repeatCount="indefinite"
+      values="
+      M100,30 C120,60 145,90 145,130 C145,165 125,180 100,180 C75,180 55,165 55,130 C55,90 80,60 100,30Z;
+      M100,30 C122,62 147,92 143,132 C141,167 123,178 100,180 C77,178 59,167 57,132 C53,92 78,62 100,30Z;
+      M100,30 C120,60 145,90 145,130 C145,165 125,180 100,180 C75,180 55,165 55,130 C55,90 80,60 100,30Z"
+      calcMode="spline"
+      keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"
+    />
+  </path>
+  
+  <!-- Subtle inner highlight for depth -->
+  <path d="M100,40 
+           C115,65 130,90 130,130 
+           C130,155 115,170 100,170 
+           C85,170 70,155 70,130 
+           C70,90 85,65 100,40Z" 
+        fill="#ffffff" 
+        opacity="0.10" />
+</svg>
