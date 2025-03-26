@@ -8,6 +8,8 @@ import io
 import uuid
 import datetime
 import json
+import atexit
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -15,6 +17,7 @@ app.secret_key = 'blood_group_detection_secret_key'
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'bmp'}
+app.config['FILE_LIFETIME'] = 15 * 60  # 15 minutes in seconds (15 * 60 = 900)
 
 # Create upload directory if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -38,25 +41,45 @@ def load_model():
     # Load the model
     MODEL = tf.keras.models.load_model(model_path)
     
-    # Get class names from the model directory
-    # This assumes your dataset structure matches your class names
-    # If not, you may need to hardcode them or save them during training
+    # Get class names
     dataset_dir = 'dataset'
     if os.path.exists(dataset_dir):
         CLASS_NAMES = sorted([d for d in os.listdir(dataset_dir) if os.path.isdir(os.path.join(dataset_dir, d))])
     else:
-        # Backup approach: hardcode potential blood group classes
         CLASS_NAMES = ['A+', 'A-', 'AB+', 'AB-', 'B+', 'B-', 'O+', 'O-']
     
     print(f"Model loaded successfully. Class names: {CLASS_NAMES}")
 
+def cleanup_old_files():
+    """Delete files older than configured lifetime from uploads and reports directories"""
+    with app.app_context():
+        current_time = datetime.datetime.now()
+        directories = [app.config['UPLOAD_FOLDER'], 'reports']
+        
+        for directory in directories:
+            if not os.path.isdir(directory):
+                continue
+            
+            for filename in os.listdir(directory):
+                file_path = os.path.join(directory, filename)
+                if os.path.isfile(file_path):
+                    modification_time = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+                    file_age = (current_time - modification_time).total_seconds()
+                    
+                    if file_age > app.config['FILE_LIFETIME']:
+                        try:
+                            os.remove(file_path)
+                            app.logger.info(f"Deleted old file: {file_path}")
+                        except Exception as e:
+                            app.logger.error(f"Error deleting {file_path}: {e}")
+
 def preprocess_image(image_data):
     """Preprocess image data for model prediction"""
     img = Image.open(io.BytesIO(image_data))
-    img = img.convert('RGB')  # Convert to RGB if grayscale
-    img = img.resize((96, 103))  # Resize to match the model's expected input size
-    img_array = np.array(img) / 255.0  # Normalize
-    return np.expand_dims(img_array, axis=0)  # Add batch dimension
+    img = img.convert('RGB')
+    img = img.resize((96, 103))
+    img_array = np.array(img) / 255.0
+    return np.expand_dims(img_array, axis=0)
 
 def predict_blood_group(image_data):
     """Process image and predict blood group"""
@@ -65,7 +88,6 @@ def predict_blood_group(image_data):
     predicted_class_index = np.argmax(predictions[0])
     confidence = float(predictions[0][predicted_class_index])
     
-    # Get top 3 predictions with confidence scores
     top_indices = np.argsort(predictions[0])[-3:][::-1]
     top_predictions = [
         {
@@ -224,6 +246,12 @@ def server_error(e):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
-    # Load model on startup
     load_model()
+    
+    # Initialize and start scheduler
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(cleanup_old_files, 'interval', minutes=5)
+    scheduler.start()
+    atexit.register(lambda: scheduler.shutdown())
+    
     app.run(debug=True, host='0.0.0.0', port=5000)
